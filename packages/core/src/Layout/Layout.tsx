@@ -157,6 +157,16 @@ export interface LayoutProps extends Omit<BaseProps, 'content'> {
    * Inline styles to apply to the root element.
    */
   style?: React.CSSProperties;
+
+  /**
+   * Children are a shorthand for the `content` slot:
+   * `<Layout>{main}</Layout>` is equivalent to `<Layout content={main} />`.
+   * The surrounding zones (`header`/`start`/`end`/`footer`) stay explicit
+   * props. If both `content` and `children` are provided, `content` wins.
+   * Accepting children keeps the natural `<Layout>…</Layout>` form from
+   * rendering a blank shell.
+   */
+  children?: ReactNode;
 }
 
 /**
@@ -222,6 +232,7 @@ function AreaProvider({
  * ```
  */
 export function Layout({
+  children,
   content,
   contentWidth,
   defaultHasDividers,
@@ -237,6 +248,9 @@ export function Layout({
   style,
 }: LayoutProps) {
   const isFill = height === 'fill';
+  // Children are a shorthand for the content slot; an explicit `content` prop
+  // wins when both are provided.
+  const resolvedContent = content ?? children;
 
   const dividerCtxValue = useMemo(
     () => (defaultHasDividers != null ? {defaultHasDividers} : null),
@@ -287,7 +301,7 @@ export function Layout({
             )}>
             <AreaProvider area="start">{start}</AreaProvider>
             <div {...stylex.props(...stackItem({size: 'fill'}))}>
-              <AreaProvider area="content">{content}</AreaProvider>
+              <AreaProvider area="content">{resolvedContent}</AreaProvider>
             </div>
             <AreaProvider area="end">{end}</AreaProvider>
           </div>
